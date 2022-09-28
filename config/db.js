@@ -1,10 +1,10 @@
-const dotenv = require('dotenv');
+require('dotenv').config();
+
 const mongoose = require('mongoose');
-dotenv.config({ path: './config/config.env' });
 
 const connectDB = async() => {
     try {
-        const conn = await mongoose.connect('mongodb+srv://bm:JHZoPhdSw0O4WFj2@cluster0.xb9flsz.mongodb.net/?retryWrites=true&w=majority', {
+        const conn = await mongoose.connect(process.env.ATLAS_URI, {
             useNewUrlParser: true,
             // useCreateIndex: true,
             useUnifiedTopology: true,

@@ -1,8 +1,10 @@
 const User = require('../models/userModel');
 const Cost = require('../models/costModel');
 const mongoose = require('mongoose');
-let bodyParser = require('body-parser');
-let jsonParser = bodyParser.json();
+// let bodyParser = require('body-parser');
+// let jsonParser = bodyParser.json();
+const ObjectId = mongoose.Types.ObjectId;
+
 
 
 // @desc    Get user
@@ -12,20 +14,12 @@ exports.getUsers = async(req, res, next) => {
         console.log('Entered here');
         const users = await User.find({}).populate('costs');
         console.log('Arrived here', users);
-        return users;
+        return res.json(users);
     } catch (err) {
-        if (err.name === 'ValidationError') {
-            res.status(400);
-            console.log(JSON.stringify(err));
-            res.send(err);
-        } else {
-            console.log(`Error fetching standalone user\n ${err}`);
-            res.status(500);
-            res.send(err);
-        }
+        console.log(`Error getting users:\n ${err}`);
+        res.status(500);
+        res.send(err);
     }
-    // always return a value at the end of async arrow function
-    return null;
 };
 
 // exports.getUserById = async(id) => {
@@ -47,7 +41,15 @@ exports.addUser = async(req, res, next) => {
         return res.status(200).json(newuser);
     } catch (err) {
         console.log(`Error adding user:\n ${err}`);
-        console.log(err);
+        if (err.name === 'ValidationError') {
+            res.status(400);
+            console.log(JSON.stringify(err));
+            res.send(err.message);
+        } else {
+            console.log(`Error adding user:\n ${err}`);
+            res.status(500);
+            res.send(err.message);
+        }
     }
     // always return a value at the end of async arrow function
     return null;
@@ -57,63 +59,48 @@ exports.addCostToUser = async(req, res, next) => {
     try {
         const userId = req.params.id;
         let newCost = new Cost(req.body);
-        newCost.user_id = userId;
+        newCost.user = userId;
         await newCost.save();
-        return res.status(200).json(newcost);
+        return res.status(200).json(newCost);
     } catch (err) {
        console.log(`Error adding cost to user:\n ${err}`);
-       console.log(err);
+       res.status(err.name === 'ValidationError' ? 400 : 500);
+       console.log(err.message);
+       res.send(err.message);
+
    }
    // always return a value at the end of async arrow function
    return null;
 };
 
-exports.getUsersExpensesReportByMonth = async(req, res) => {
+exports.getUsersExpensesReport = async(req, res) => {
     try {
         console.log('Entered here');
-        const costs = await Cost.aggregate([ {
-            $group: {
-                _id: {
-                    userId: '$user_id',
-                    month: {
-                        $month: '$date'
-                    }
-                },
-                costs: {
-                    $sum: 1
-                },
-                costsDetails: {
-                    $push: {
-                        costId: '$_id',
-                        costDate: '$date'
-                    }
-                },
-                expenses: {
-                    $sum: {
-                        $toInt: '$sum'
-                    }
-                },
-            }
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: '_id.userId',
-                foreignField: '_id',
-                as: 'User'
-            }
-        },
-        {
-            $project: {
-                User: 1,
-                expenses: 1,
-                costs: 1,
-                costsDetails: 1,
-                _id: 0
-            }
-        }
-        ]);
+        const userId = req.params.id;
+        const month = req.body.month;
+        const year = req.body.year;
 
+        // const costs = await Cost.find({
+        //     "user": '$userId',
+        //     {"$expr": { $eq: [
+        //       {{$month: "date"}: 12 }, 
+        //       {{$year: "date"}, 2019}
+        //         ] } 
+        //     } 
+        // });
+
+
+        const costs = await Cost.aggregate([
+            { $addFields: { "month": { "$month": "$date" }, "year": {"$year": "$date"}}},
+            { $match: 
+                { 
+                    user: new ObjectId(userId),
+                    month: month,
+                    year: year,
+                }
+            }
+
+        ]);
         console.log('Arrived here', costs);
         res.json(costs);
     } catch (err) {
