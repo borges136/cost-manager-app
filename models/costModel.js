@@ -10,7 +10,7 @@ const CostSchema = new mongoose.Schema({
         required: true
     },
     sum: {
-        type: String,
+        type: Number,
         required: true
     },
     date: {

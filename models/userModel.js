@@ -8,20 +8,23 @@ const UserSchema = new mongoose.Schema({
     },
     lastName: {
         type: String,
+        trim: true,
         required: true
     },
     city: {
         type: String,
+        trim: true,
         required: true
     },
     age: {
-        type: String,
+        type: Number,
         required: true
     }
 }, {
-  toJSON: { virtuals: true }, // So `res.json()` and other `JSON.stringify()` functions include virtuals
+  toJSON: { virtuals: true },  // So `res.json()` and other `JSON.stringify()` functions include virtuals
   toObject: { virtuals: true } // So `console.log()` and other functions that use `toObject()` include virtuals
 });
+
 UserSchema.virtual('costs', {
   ref: 'Cost',
   localField: '_id',

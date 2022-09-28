@@ -6,7 +6,6 @@ const connectDB = async() => {
     try {
         const conn = await mongoose.connect(process.env.ATLAS_URI, {
             useNewUrlParser: true,
-            // useCreateIndex: true,
             useUnifiedTopology: true,
             dbName :  'User'
         });
@@ -16,5 +15,6 @@ const connectDB = async() => {
         process.exit(1);
     }
 };
+mongoose.set('debug', true);
 
 module.exports = connectDB;
