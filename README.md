@@ -1,4 +1,4 @@
 # cost-manager-app
 A cost manager application written for node.js course at HIT.  
 
-Demo: [https://github.com/borges136/cost-manager-app](https://youtu.be/LsJRvQtp9UU)
+Demo: [https://youtu.be/LsJRvQtp9UU](https://youtu.be/LsJRvQtp9UU)
